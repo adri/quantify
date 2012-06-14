@@ -1,0 +1,99 @@
+<!doctype html>
+<html manifest="manifest.manifest">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Counter</title>
+    <style>@import "css/jqtouch.css";</style>
+    <style>@import "css/theme.css";</style>
+    <style>@import "css/jqt.scroll.css";</style>
+
+    <script src="js/jquery-1.4.2.min.js"></script>
+    <script src="js/counter.js"></script>
+    <script src="js/jqtouch.js"></script>
+    <script src="js/jqt.scroll.js"></script>
+
+    <script>
+    $(document).ready(function () {
+        var counterList = new CounterList('#counter_list');
+        //counterList.deleteCounters();
+        counterList.loadCounters();
+        //counterList.debug();
+        counterList.draw();
+
+        $('#new_counter').submit(function(e) {
+          e.preventDefault();
+          var name = $('#name').val();
+          if (name.length == 0) {
+            $(this).removeClass('active');
+            $('#name').focus();
+            return false;
+          }
+          $('#add .back').click();
+          counterList.add(name);
+          counterList.draw();
+          counterList.saveCounters();
+          this.reset();
+        });
+    });
+
+
+    var jQT = new $.jQTouch({
+        icon: 'jqtouch.png',
+        addGlossToIcon: false,
+        startupScreen: 'jqt_startup.png',
+        statusBar: 'black',
+        preloadImages: [
+            'img/apple/img/grayButton.png',
+            'img/apple/img/whiteButton.png',
+            'img/apple/img/loading.gif'
+            ],
+        slideSelector: '.slide'
+    });
+
+    </script>
+    <style type="text/css">
+    .name{
+      min-height: 34px;
+    }
+    .counts {
+      float: right;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      width: 50px;
+      padding: 5px;
+      text-align: right;
+      background: #eee;
+    }
+    </style>
+  </head>
+    <body>
+    <div id="jqt">
+      <div id="home" class="content current">
+        <div class="toolbar">
+          <h1>Counter</h1>
+          <!-- <a href="#info" class="button leftButton flip">Edit</a> -->
+          <a href="#add" class="button add slideup">+</a>
+        </div>
+        <ul class="metal scroll" id="counter_list"></ul>
+      </div>
+
+      <div id="add" class="content form">
+        <div class="toolbar">
+            <h1>New Counter</h1>
+            <a href="#add" class="back">Cancel</a>
+        </div>
+        <div class="scroll">
+          <div class="info">
+            <form id="new_counter">
+              <ul class="rounded">
+                <li><input type="text" id="name" name="name" placeholder="Name"></li>
+              </ul>
+              <a href="#" style="margin: 10px;" class="whiteButton submit">Add Counter</a>
+            </form>
+        </div>
+      </div>
+
+    </div>
+
+    </body>
+</html>
