@@ -14,6 +14,10 @@
 
     <script>
     $(document).ready(function () {
+        var app = new Quantify();
+        app.run();
+
+        return;
         var counterList = new CounterList('#counter_list');
         //counterList.deleteCounters();
         counterList.loadCounters();
