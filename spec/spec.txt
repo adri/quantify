@@ -1,0 +1,24 @@
+Quantifier
+==========
+
+Screens
+-------
+
+ * counters (home)
+ * add counter
+ * counter details: statistics
+ * counter details: data
+
+Elements
+--------
+
+On counters screen:
+ * + button
+ * edit button
+ * counters list
+
+On add counters screen:
+ * name field 
+ * add counter - button 
+ * back button
+ 
