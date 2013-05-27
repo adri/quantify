@@ -1,7 +1,8 @@
+
 class Counter
     @type = 'default'
 
-    constructor: (name, counts) ->
+    constructor: (name, counts = []) ->
         @name = name
         @counts = counts
 
@@ -14,21 +15,23 @@ class Counter
     getAmount: ->
         @counts.length
 
-class CurrencyCounter extends Counter
-    @type = 'currency'
+# class CurrencyCounter extends Counter
+#     @type = 'currency'
 
-class WeightCounter extends Counter
-    @type = 'weight'
+# class WeightCounter extends Counter
+#     @type = 'weight'
 
-class DurationCounter extends Counter
-    @type = 'duration'
+# class DurationCounter extends Counter
+#     @type = 'duration'
 
 
 class CounterFactory
-    create: (counter) ->
+    @create: (counter) ->
         new Counter(counter.name, counter.counts)
 
 class CounterList
+    counterListId: "counter_list"
+
     constructor: (storage) ->
         @counterList = []
         @storage = storage
@@ -38,10 +41,11 @@ class CounterList
         @counterList.push CounterFactory.create(counter)
 
     persist: ->
-        @storage.setItem("counter_list", self.counters);
+        @storage.setItem(@counterListId, @counterList);
 
     load: ->
-        for counter in @storage.getItemOrElse("counter_list", [])
+        counters = @storage.getItemOrElse(@counterListId, [])
+        for counter in counters
             @add(counter)
 
     getCounterList: ->
@@ -49,17 +53,18 @@ class CounterList
 
 class LocalStorageJson
     setItem: (name, value) ->
-        JSON.stringify(localStorage.setItem(name, value))
+        localStorage.setItem(name, JSON.stringify(value))
 
     getItem: (name) ->
-        JSON.parse(localStorage.getItem(name))
+        item = localStorage.getItem(name)
+        return JSON.parse(item) if item?
 
-    getItemOrElse: (name, returnValue) ->
-        return @getItem(name) if @getItem(name)
-        returnValue
+    getItemOrElse: (name, defaultValue) ->
+        return @getItem(name) if @getItem(name)?
+        defaultValue
 
 class CounterListView
-    @id = '#counter_list'
+    listId: '#counter_list'
 
     constructor: (counterList) ->
         @model = counterList
@@ -71,31 +76,37 @@ class CounterListView
 
         for i, counter of @model.getCounterList()# ...
             # add dom element
-            $(listId).append('<li class="counter">' +
-                '<div class="counts">' + counter.counts.length + '</div>' +
-                '<div class="name">' + counter.name + '</div>' +
-                '</li>');
+            $(@listId).append("""
+                <li class="counter">
+                    <div class="counts">#{counter.counts.length}</div>
+                    <div class="name">#{counter.name}</div>
+                </li>
+            """);
 
             # bind events
-            @getListItems().last().find('.counts').click () -> $.proxy(() ->
-                @count();
-                $(e.target).html(@value());
-                @model.persist();
-            , counter);
+            @getLastListItem().find('.counts').bind 'click', counter, @clickOnCounter
+
+    clickOnCounter: (event) =>
+        counter = event.data
+        counter.count()
+        $(event.target).html counter.getAmount()
+        @model.persist()
 
     getListItems: ->
-        $(@id).children
+        $(@listId).children()
+
+    getLastListItem: ->
+        @getListItems().last()
 
 class CounterAddView
-    @form = '#new_counter'
-    @nameField = '#name'
+    addForm: '#add form'
+    nameField: '#name'
 
     constructor: (counterList) ->
         @model = counterList
 
     render: ->
-        $(@form).submit (e) ->
-            debugger
+        $(@addForm).submit (e) =>
             e.preventDefault();
             name = $(@nameField).val();
             if name.length == 0
@@ -104,11 +115,17 @@ class CounterAddView
                 return false
 
             $('#add .back').click();
-            @model.add(CounterFactory.create({name: name, type: 'default'}));
+            @model.add(
+                name: name
+                type: 'default'
+            );
             @model.persist();
             @reset();
 
-class Quantify
+    reset: ->
+        $(@name_field).val();
+
+class @Quantify
     constructor: () ->
         @storage = new LocalStorageJson()
         @counterList = new CounterList(@storage)
@@ -116,7 +133,6 @@ class Quantify
         @counterAddView = new CounterAddView(@counterList)
 
     run: ->
-        console.debug @counterList
         @counterListView.render()
         @counterAddView.render()
 
